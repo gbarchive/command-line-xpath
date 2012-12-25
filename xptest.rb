@@ -6,7 +6,9 @@
 ### 	quickly test XPath queries on a file (HTML/XML) or URL to
 ###	see what they return. This is useful when developing scrapers
 ###	or other tools. 
-
+###
+###	xptest [file or URI] [xpath query]
+###		-> returns the list and count of results matched by xpath query
 require 'optparse'
 require 'rubygems'
 require 'nokogiri'	# XML/XPath parsing
