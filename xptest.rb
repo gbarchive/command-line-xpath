@@ -27,6 +27,8 @@ USER_AGENT_SHORTCUTS = {
 	:wget		=> "Wget/1.9.1",
 	:googlebot	=> "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
 }
+DEFAULT_PROTOCOL = "http"
+DEFAULT_REFERRER = ""
 
 def printVerbose(string) 
 	if ($options[:verbose] or $options[:extra_verbose]) then
@@ -46,6 +48,7 @@ def autodetectMode(fn)
 	elsif fn =~ URI::regexp
 		:url
 	else
+		# TODO: if URL-specific options are on, assume URL probably.
 		DEFAULT_MODE
 	end
 end
@@ -68,10 +71,9 @@ end
 
 def getURL(url)
 	# TODO: add default protocol here.
-	# TODO: add referrer support.
 
 	result = ""	
-	open(url, "User-Agent" => $options[:user_agent]) do |data|
+	open(url, "User-Agent" => $options[:user_agent], "Referer" => $options[:referrer]) do |data|
 		printVerbose("Read in " + data.base_uri.to_s + " (" + data.content_type.to_s + ").")
 		result = data.read
 	end
@@ -105,8 +107,13 @@ opts = OptionParser.new do |opts|
 	end
 	
 	$options[:user_agent] = DEFAULT_USER_AGENT
-	opts.on('-a', '--user-agent [agent]', "Set user agent. Valid shortcuts include {" + USER_AGENT_SHORTCUTS.keys.map { |key| key.to_s } .join(',') + "}") do |ua|
+	opts.on('-a', '--user-agent [agent]', "Set HTTP user agent. Valid shortcuts include {" + USER_AGENT_SHORTCUTS.keys.map { |key| key.to_s } .join(',') + "}") do |ua|
 		$options[:user_agent] = autodetectUserAgent(ua)
+	end
+
+	$options[:referrer] = DEFAULT_REFERRER
+	opts.on('-r', '--referrer [url]', "Set HTTP referrer.") do |url|
+		$options[:referrer] = url
 	end
 
 	$options[:numbering] = true
