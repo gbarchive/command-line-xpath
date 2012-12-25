@@ -9,6 +9,7 @@
 ###
 ###	xptest [file or URI] [xpath query]
 ###		-> returns the list and count of results matched by xpath query
+
 require 'optparse'
 require 'rubygems'
 require 'nokogiri'	# XML/XPath parsing
@@ -107,7 +108,12 @@ opts = OptionParser.new do |opts|
 	opts.on('-a', '--user-agent [agent]', "Set user agent. Valid shortcuts include {" + USER_AGENT_SHORTCUTS.keys.map { |key| key.to_s } .join(',') + "}") do |ua|
 		$options[:user_agent] = autodetectUserAgent(ua)
 	end
-	
+
+	$options[:numbering] = true
+	opts.on('-n', '--no-numbering', "Disable numbering in output (for piping).") do
+		$options[:numbering] = false
+	end
+
 	opts.on('-u', '--url', "Override autodetection, force [file/url] to be treated as a URL.") do
 		$options[:mode] = :url
 	end
@@ -162,9 +168,17 @@ case $options[:parser]
 end
 
 results = doc.xpath(xpath_query)
+results.each_with_index { |result, i|
+	if $options[:numbering] then	
+		line = (i+1).to_s + ".)\t" + result
+	else
+		line = result
+	end
 
-puts results
-puts "\n"
-puts "Showing " + results.length.to_s + " results for \"" + xpath_query + "\"."
+	puts line
+}
+	
+
+puts "\nShowing " + results.length.to_s + " results for \"" + xpath_query + "\"." unless !$options[:numbering]
 # } 
 
